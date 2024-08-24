@@ -1,20 +1,37 @@
 import random
 from agent import Agent
-from prompts import SYSTEM_PROMPTS
+from prompts import INSTRUCTION_PROMPT, INFO_PROMPTS, SYSTEM_PROMPTS, SCENE_PROMPT
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
+app = FastAPI()
+origins = [
+    "http://localhost",
+    "http://localhost:8000",
+    "http://localhost:5173",
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-num_agents = len(SYSTEM_PROMPTS)
-# chosen_names = random.sample(["Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace", "Heidi", "Ivan", "Judy"], 3)
-chosen_names = ["Alice", "Bob", "Charlie"]
+names = ["Heidi", "Vincent", "Isabella"]
 
 # Create agents with the chosen prompts and names
-agents = [Agent(prompt, name) for prompt, name in zip(SYSTEM_PROMPTS, chosen_names)]
-killer = agents[2].name
+agents = [Agent([INSTRUCTION_PROMPT, system_prompt], name) for system_prompt, name in zip(SYSTEM_PROMPTS, names)]
+killer = agents[2].name.lower()
+
+conversation = [SCENE_PROMPT, *INFO_PROMPTS]
 
 
 def run_conversation():
+    # i hate globals too but we have like a couple hours lol
+    global conversation
+
     print("Welcome to the multi-agent conversation! Type 'exit' to end the conversation.")
-    conversation = []
 
     while True:
         user_input = input("You: ")
@@ -29,9 +46,18 @@ def run_conversation():
 
         # Each agent responds in turn
         for agent in agents:
-            response = f"{agent.name}: {agent.respond(conversation)}"
+            response = agent.respond(conversation)
             print(response)
             conversation.append(response)
+
+@app.get("/messages")
+def get_messages() -> list[str]:
+    global conversation
+
+    return conversation
+
+# going to write a websocket for the live messages as they come in
+
 
 
 if __name__ == "__main__":
