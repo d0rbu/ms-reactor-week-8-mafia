@@ -1,7 +1,8 @@
 import random
+import asyncio
 from agent import Agent
 from prompts import INSTRUCTION_PROMPT, INFO_PROMPTS, SYSTEM_PROMPTS, SCENE_PROMPT
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -56,9 +57,18 @@ def get_messages() -> list[str]:
 
     return conversation
 
-# going to write a websocket for the live messages as they come in
-
-
+@app.websocket("/")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    while True:
+        sent_second_message = False
+        # wait 20 seconds for a user message. if no message is received, send a message from the agents
+        try:
+            user_message = await asyncio.wait_for(websocket.receive_text(), timeout=20)
+        except asyncio.TimeoutError:
+            print("No user message received")
+            user_message = None
+            sent_second_message = True
 
 if __name__ == "__main__":
     run_conversation()

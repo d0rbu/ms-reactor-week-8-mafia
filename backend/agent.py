@@ -1,5 +1,7 @@
 import os
 import json
+from dataclasses import dataclass
+
 
 from dotenv import load_dotenv
 from typing import Self
@@ -8,6 +10,11 @@ from octoai.text_gen import ChatMessage
 from octoai.client import OctoAI
 
 load_dotenv()
+
+@dataclass
+class MafiaMessage:
+    content: str
+    user: str
 
 class Response(Enum):
     NO_RESPONSE = 1
@@ -20,16 +27,16 @@ class Agent:
             api_key=os.getenv('OCTOAI_KEY'),
         )
 
-    def respond(self: Self, conversation: list[str]) -> str | Response:
+    def respond(self: Self, conversation: list[MafiaMessage]) -> MafiaMessage:
         messages=[
             ChatMessage(
                 content="\n\n".join(self.system_prompts),
                 role="system"
             ),
-            *[ChatMessage(
-                content=message,
+            ChatMessage(
+                content='\n'.join([f"{chat.user}: {chat.content}" for chat in conversation]),
                 role="user"
-            ) for message in conversation]
+            )
         ]
 
         response = self.client.text_gen.create_chat_completion(
