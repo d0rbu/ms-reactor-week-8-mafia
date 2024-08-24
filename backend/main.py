@@ -62,23 +62,24 @@ async def guess(killer_guess: str):
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
+    rounds_since_last_message = 0
     await websocket.accept()
     while not game_over:
-        sent_second_message = False
         # wait 20 seconds for a user message. if no message is received, send a message from the agents
         try:
-            user_message = await asyncio.wait_for(websocket.receive_text(), timeout=None if sent_second_message else 20)
+            user_message = await asyncio.wait_for(websocket.receive_text(), timeout=None if rounds_since_last_message < 2 else random.randint(10, 25))
+            rounds_since_last_message = 0
         except asyncio.TimeoutError:
-            print("No user message received")
             user_message = None
-            sent_second_message = True
+            rounds_since_last_message += 1
 
         if user_message is not None:
             conversation.append(MafiaMessage(content=user_message, user="user", color=user_color))
 
-        agents_shuffled = agents.copy()
-        random.shuffle(agents_shuffled)
-        for agent in agents:
-            response = agent.respond(conversation)
-            conversation.append(response)
-            await websocket.send_text(json.dumps(dataclasses.asdict(response)))
+        if rounds_since_last_message < 2:
+            agents_shuffled = agents.copy()
+            random.shuffle(agents_shuffled)
+            for agent in agents:
+                response = agent.respond(conversation)
+                conversation.append(response)
+                await websocket.send_text(json.dumps(dataclasses.asdict(response)))

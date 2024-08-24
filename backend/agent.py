@@ -48,3 +48,31 @@ class Agent:
         ).choices[0].message.content
 
         return MafiaMessage(content=response, user=self.name, color=self.color)
+    
+    def vote(self: Self, conversation: list[MafiaMessage]) -> MafiaMessage:
+        messages=[
+            ChatMessage(
+                content="\n\n".join(self.system_prompts),
+                role="system"
+            ),
+            ChatMessage(
+                content=f"given the following conversation, vote who the killer is, you cannot choose {self.name} because it's you",
+                role="system"
+            ),
+            ChatMessage(
+                content='\n\n'.join([f"{message.user}: {message.content}" for message in conversation]),
+                role="user"
+            )
+        ]
+
+        selection = self.client.text_gen.create_chat_completion(
+            max_tokens=512,
+            messages=messages,
+            model="meta-llama-3.1-8b-instruct",
+            presence_penalty=0,
+            temperature=0,
+            top_p=1
+        ).choices[0].message.content
+
+        return selection
+

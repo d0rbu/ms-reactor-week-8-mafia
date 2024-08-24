@@ -4,10 +4,18 @@
   import { Input } from "$lib/components/ui/input";
   import { onMount } from "svelte";
 
-  let messages = ["Hello", "World"];
+  let messages = [];
+  let socket = null;
+
+  $: if (messages[messages.length - 1].user === "user") {
+    const last_user_message = messages[messages.length - 1]
+    
+    // send it to the server
+    socket.send(last_user_message);
+  }
 
   onMount(() => {
-    const socket = new WebSocket("ws://localhost:8000/ws");
+    socket = new WebSocket("ws://localhost:8000/ws");
     socket.onmessage = (event) => {
       messages = [...messages, event.data];
     };
@@ -62,19 +70,6 @@
         </div>
       {/each}
       </div>
-      <!-- <Card.Root class="border border-red-300">
-        <Card.Header>
-          <Card.Title>Card Title</Card.Title>
-          <Card.Description>Card Description</Card.Description>
-        </Card.Header>
-        <Card.Content>
-          <p>Card Content</p>
-        </Card.Content>
-        <Card.Footer>
-          <p>Card Footer</p>
-        </Card.Footer>
-      </Card.Root> -->
-      
     </ScrollArea>
     <Input class="bg-slate-800 border-none text-white outline-none focus:outline-none" />
   </div>
