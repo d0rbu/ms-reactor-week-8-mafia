@@ -30,34 +30,26 @@
       <!-- Div containing two columns, on the left are the messages recieved, and on the right are messages sent -->
       <div class="flex flex-col space-y-2 border border-green-400 p-4">
         {#each messages as message}
-          <div class="flex justify-start border border-border-3 border-red-400 pr-32">
-            <Card.Root class="border border-green-300 w-full p-2">
+          <div class="flex justify-start border border-border-3 border-red-400 pr-32 p-4">
+            <Card.Root class="border border-green-300 w-full p-0">
               <Card.Header>
-                <Card.Title>Card Title</Card.Title>
                 <Card.Description>Card Description</Card.Description>
               </Card.Header>
               <Card.Content>
                 <p>{message}</p>
               </Card.Content>
-              <Card.Footer>
-                <p>Card Footer</p>
-              </Card.Footer>
             </Card.Root>
           </div>
         {/each}
         {#each messages as message}
         <div class="flex justify-end border border-border-3 border-yellow-400 pl-32 p-2">
-          <Card.Root class="border border-green-300 w-full">
+          <Card.Root class=" w-full p-0 border-none bg-blue-700">
             <Card.Header>
-              <Card.Title>Card Title</Card.Title>
-              <Card.Description>Card Description</Card.Description>
+              <Card.Description class="text-right text-gray-300">Card Description</Card.Description>
             </Card.Header>
-            <Card.Content>
+            <Card.Content class="text-right text-white">
               <p>{message}</p>
             </Card.Content>
-            <Card.Footer>
-              <p>Card Footer</p>
-            </Card.Footer>
           </Card.Root>
         </div>
       {/each}
