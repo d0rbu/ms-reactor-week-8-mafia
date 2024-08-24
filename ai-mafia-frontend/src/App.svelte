@@ -7,7 +7,7 @@
   let messages = [];
 
   onMount(() => {
-    const socket = new WebSocket("ws://localhost:8000");
+    const socket = new WebSocket("ws://localhost:8000/ws");
     socket.onmessage = (event) => {
       messages = [...messages, event.data];
     };

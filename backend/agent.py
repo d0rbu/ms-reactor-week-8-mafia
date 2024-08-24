@@ -15,14 +15,13 @@ load_dotenv()
 class MafiaMessage:
     content: str
     user: str
-
-class Response(Enum):
-    NO_RESPONSE = 1
+    color: str
 
 class Agent:
-    def __init__(self: Self, system_prompts: list[str], name: str) -> None:
+    def __init__(self: Self, system_prompts: list[str], name: str, color: str) -> None:
         self.system_prompts = system_prompts
         self.name = name
+        self.color = color
         self.client = OctoAI(
             api_key=os.getenv('OCTOAI_KEY'),
         )
@@ -34,7 +33,7 @@ class Agent:
                 role="system"
             ),
             ChatMessage(
-                content='\n'.join([f"{chat.user}: {chat.content}" for chat in conversation]),
+                content='\n\n'.join([f"{message.user}: {message.content}" for message in conversation]),
                 role="user"
             )
         ]
@@ -48,7 +47,4 @@ class Agent:
             top_p=1
         ).choices[0].message.content
 
-        if response == "NO_RESPONSE":
-            return Response.NO_RESPONSE
-
-        return response
+        return MafiaMessage(content=response, user=self.name, color=self.color)
